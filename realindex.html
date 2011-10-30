@@ -1,0 +1,159 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Peg list</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet/less" href="/bootstrap/lib/estrap.less">
+  <script src="/less.js"></script>
+  
+  <script src="/js/modernizr-2.0.6.min.js"></script>
+  <style type="text/css" media="screen">
+    #boxes {
+      list-style: none;
+      padding: 15px;
+    }
+    #boxes li {
+      padding: 10px;
+      font-weight: 300;
+      margin-bottom: 3px;
+      text-shadow: rgba(255,255,255,0.5) 0px 1px 0px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <textarea id="thing" rows="20" cols="200" style="width:500px">asdf</textarea> -->
+
+  <div class="container">
+
+  <header>
+    <h1>Peg List</h1>
+  </header>
+
+  <article>
+    <h1>What is a Peg list?</h1>
+
+    <form id="colorValues">
+      <div class="clearfix">
+        <label>R G B</label>
+        <div class="input">
+          <div class="inline-inputs">
+            <input class="mini" id="red" type="text" value="200">
+            <input class="mini" id="green" type="text" value="120">
+            <input class="mini" id="blue" type="text" value="17">
+            <span class="help-inline">All values are between 0 and 255</span>
+          </div>
+        </div>
+      </div>
+      <div class="clearfix">
+        <input type="submit" class="btn primary" value="Go">
+      </div>
+    </form>
+    <ul id="boxes"></ul>
+    
+    <button class="btn primary large">Button Clicky</button>
+
+    <p class="well" cite="http://en.wikipedia.org/wiki/Mnemonic_peg_system">
+        A peg system is a <a href="http://en.wikipedia.org/wiki/Mnemonic" title="Mnemonic - Wikipedia, the free encyclopedia">mnemonic</a> technique for memorizing lists. It works by pre-memorizing a list of words that are easy to associate with the numbers they represent(1 to 10, 1-100, 1-1000, etc). Those objects form the “pegs” of the system. Then in the future, to rapidly memorize a list of arbitrary objects, each one is associated with the appropriate peg. Generally, a peglist only has to be memorized one time, and can then be used over and over every time a list of items needs to be memorized.
+      <br>
+      <br>
+      — <cite>http://en.wikipedia.org/wiki/Mnemonic_peg_system</cite>
+    </p>
+
+    <p>
+      The short version: you spend time in the beginning learning a list of words that you later use as anchors for memorizing OTHER things. By working on this memory skill, not only are you able to memorize lists in day-to-day life (like groceries), it helps you with your normal memory as well.
+    </p>
+
+    <p>
+      Here’s an example. Let’s pretend your peg list has these items as it’s first five:
+    </p>
+
+    <ol>
+      <li>gun</li>
+      <li>shoe</li>
+      <li>tree</li>
+      <li>door</li>
+      <li>hive</li>
+    </ol>
+
+    <p>
+      and the list you need to memorize is:
+    </p>
+
+    <ol>
+      <li>tomatos</li>
+      <li>milk</li>
+      <li>bread</li>
+      <li>toothpaste</li>
+      <li>toilet paper</li>
+    </ol>
+
+    <p>
+      You’d go through the list and form the silliest pictures you can relating one to the other.
+    </p>
+  </article>
+
+  <footer>
+    <p>&copy; Erik Kastner</p>
+  </footer>
+
+  </div>
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>-->
+  <script src="/js/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+  <!--[if lt IE 7 ]>
+    <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+  <![endif]-->
+  
+  <script type="text/javascript" charset="utf-8">
+    var r = 200;
+    var g = 70;
+    var b = 20;
+    
+    var h = 153;
+    var s = 50;
+    var l = 50;
+    
+    $("#colorValues").live("submit", function(evt) {
+      evt.preventDefault();
+
+      var r = $("#red").val();
+      var g = $("#green").val();
+      var b = $("#blue").val();
+
+      $("#boxes li").remove();
+      $("<li>")
+        .appendTo("#boxes")
+        .html("<b>Your picked color</b> ("+r+", "+g+", "+b+")")
+        .css("backgroundColor", "rgb("+r+","+g+","+b+")");
+      $.get("http://solr.metaatem.net/solr/" + "select?version=2.2&q=*%3A*&start=0" + "&rows=50&fl=*%2Cscore&qt=" + "&wt=json&sort=dist(2,red,green,blue," + r + "," + g + "," + b + ")%20asc&json.wrf=?", function(m) {
+        // console.log(m);
+        m.response.docs.forEach(function (o, i) {
+          var link = "<a href='" + o.url + "' target='_blank'>" + o.title + "</a>";
+          link += " CL rank (lower is better): " + o.rank + "";
+          $("<li>")
+            .appendTo("#boxes")
+            .html(link + " ("+o.red+", "+o.green+", "+o.blue+")")
+            .css("backgroundColor", "#"+o.hex);
+        });
+      }, "jsonp");
+    })
+    // $("<li>").appendTo("#boxes").css("backgroundColor", "hsl("+h+","+s+"%,"+l+"%)");
+
+          $(function() {
+      setTimeout(function () {
+        $("#thing").html(($("style")[0].innerHTML));
+      }, 300);
+    });
+  </script>
+</body>
+</html>
