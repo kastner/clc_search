@@ -144,9 +144,14 @@
         m.response.docs.forEach(function (o, i) {
           var link = "<a href='" + o.url + "' target='_blank'>" + o.title + "</a>";
           link += " " + o.rank + " / " + o.numScores;
+          link += " (" + o.red + ", " + o.green + ", " + o.blue + ")";
+          link += " <button class='btn small pull-right info' style='margin-top:-.7em'>reset to this</button>";
           $("<li>")
             .appendTo("#boxes")
-            .html(link + " ("+o.red+", "+o.green+", "+o.blue+")")
+            .data("r", o.red)
+            .data("g", o.green)
+            .data("b", o.blue)
+            .html(link)
             .css("backgroundColor", "#"+o.hex);
         });
 
@@ -229,6 +234,18 @@
           }
         }
         updateRGB();
+      });
+
+      $("#boxes li button").live("click", function() {
+        var d = $(this).parent("li").data();
+
+        $("#red").val(d.r);
+        $("#green").val(d.g);
+        $("#blue").val(d.b);
+
+        updateRGB();
+
+        $("#colorValues").submit();
       });
     });
   </script>
