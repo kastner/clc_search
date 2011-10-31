@@ -12,7 +12,7 @@
   <meta name="author" content="">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" type="text/css" href="/clc/css/estrap.min.css">
-  
+
   <script src="/clc/js/modernizr-2.0.6.min.js"></script>
   <style type="text/css" media="screen">
     body {
@@ -78,7 +78,7 @@
     </form>
 
     <ul id="boxes"></ul>
-    
+
   </article>
 
   <footer>
@@ -95,13 +95,17 @@
     <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
     <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
   <![endif]-->
-  
+
   <script type="text/javascript" charset="utf-8">
     var didScroll = false;
     var loaded = false;
     var loading = false;
 
     $("#colorValues").live("submit", function(evt) {
+      loaded = false;
+      loading = false;
+      didScroll = false;
+
       evt.preventDefault();
 
       $("#colorpicker").hide();
@@ -134,7 +138,7 @@
       query += "&q={!func}product(div(1,sqedist(red,green,blue," + d.r + "," + d.g + "," + d.b + ")),recip(rank,1,1000,1000))"
       query += "&start=" + d.count + "&rows=" + d.limit + "&fl=*%2Cscore&qt=";
       query += "&wt=json&json.wrf=?";
-      
+
       $.get(query, function(m) {
         d.count += m.response.docs.length;
         m.response.docs.forEach(function (o, i) {
