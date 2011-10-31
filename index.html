@@ -8,12 +8,10 @@
 <head>
   <meta charset="utf-8">
   <title>Colour Lovers NEAR search</title>
-  <base href="/clc">
   <meta name="description" content="">
   <meta name="author" content="">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet/less" href="/clc/bootstrap/lib/estrap.less">
-  <script src="/clc/less.js"></script>
+  <link rel="stylesheet" type="text/css" href="/clc/css/estrap.min.css">
   
   <script src="/clc/js/modernizr-2.0.6.min.js"></script>
   <style type="text/css" media="screen">
@@ -42,7 +40,6 @@
 </head>
 
 <body>
-   <!-- <textarea id="thing" rows="20" cols="200" style="width:500px">asdf</textarea> -->
 
   <div class="container">
 
@@ -85,7 +82,7 @@
   </article>
 
   <footer>
-    <p>&copy; Erik Kastner</p>
+    <p>&copy; Erik <a href="http://metaatem.net/">Kastner</a></p>
   </footer>
 
   </div>
@@ -100,14 +97,10 @@
   <![endif]-->
   
   <script type="text/javascript" charset="utf-8">
-    var r = 200;
-    var g = 70;
-    var b = 20;
-    
-    var h = 153;
-    var s = 50;
-    var l = 50;
-    
+    var didScroll = false;
+    var loaded = false;
+    var loading = false;
+
     $("#colorValues").live("submit", function(evt) {
       evt.preventDefault();
 
@@ -118,14 +111,32 @@
       var b = $("#blue").val();
 
       $("#boxes li").remove();
+
       $("<li>")
         .appendTo("#boxes")
+        .data("r", r)
+        .data("g", g)
+        .data("b", b)
+        .data("limit", 50)
+        .data("count", 0)
         .html("<b>Your picked color</b> ("+r+", "+g+", "+b+")")
         .css("backgroundColor", "rgb("+r+","+g+","+b+")");
-      // $.get("http://solr.metaatem.net/solr/" + "select?version=2.2&q=*%3A*&start=0" + "&rows=50&fl=*%2Cscore&qt=" + "&wt=json&sort=dist(2,red,green,blue," + r + "," + g + "," + b + ")%20asc&json.wrf=?", function(m) {
-      // $.get("http://solr.metaatem.net/solr/" + "select?version=2.2&q={!func}div(1,dist(2,red,green,blue," + r + "," + g + "," + b + "))&start=0" + "&rows=50&fl=*%2Cscore&qt=" + "&wt=json&sort=score%20desc,rank%20asc,numScores%20desc" + "&json.wrf=?", function(m) {
-      $.get("/solr/" + "select?version=2.2&q={!func}product(div(1,sqedist(red,green,blue," + r + "," + g + "," + b + ")),recip(rank,1,1000,1000))&start=0" + "&rows=50&fl=*%2Cscore&qt=" + "&wt=json&sort=score%20desc,rank%20asc,numScores%20desc" + "&json.wrf=?", function(m) {
-        // console.log(m);
+      getColors();
+    })
+
+    function getColors() {
+      if (loading) { return; }
+      loading = true;
+
+      var d = $("#boxes li:first").data();
+
+      var query = "/solr/select?version=2.2";
+      query += "&q={!func}product(div(1,sqedist(red,green,blue," + d.r + "," + d.g + "," + d.b + ")),recip(rank,1,1000,1000))"
+      query += "&start=" + d.count + "&rows=" + d.limit + "&fl=*%2Cscore&qt=";
+      query += "&wt=json&json.wrf=?";
+      
+      $.get(query, function(m) {
+        d.count += m.response.docs.length;
         m.response.docs.forEach(function (o, i) {
           var link = "<a href='" + o.url + "' target='_blank'>" + o.title + "</a>";
           link += " " + o.rank + " / " + o.numScores;
@@ -134,8 +145,22 @@
             .html(link + " ("+o.red+", "+o.green+", "+o.blue+")")
             .css("backgroundColor", "#"+o.hex);
         });
+
+        $("<li>")
+          .appendTo("#boxes")
+          .attr("id", "moreColorsLink")
+          .html("Load more...")
+          .css("cursor", "hand").css("cursor", "pointer")
+          .css("color", "blue")
+          .click(function() {
+            $(this).remove();
+            getColors();
+          });
+
+        loaded = true;
+        loading = false;
       }, "jsonp");
-    })
+    }
 
     function updateRGB() {
       var r = $("#red").val();
@@ -144,7 +169,6 @@
 
       $("#swatch").css("backgroundColor", "rgb(" + r +", " + g + ", " + b + ")");
     }
-var fa;
 
     function updateFromHex(hex) {
       $("#swatch").css("backgroundColor", "#" + hex);
@@ -173,6 +197,21 @@ var fa;
           $("#colorpicker").show();
         })
       }, 100);
+
+      $(window).scroll(function() {
+        didScroll = true
+      });
+
+      setInterval(function() {
+        if (loaded && didScroll) {
+          didScroll = false;
+
+          if ($(window).scrollTop() >= $(document).height() - $(window).height() - 500) {
+            // let's show some more
+            $("#moreColorsLink").click();
+          }
+        }
+      }, 300);
 
       $("#red, #green, #blue, #hex").live("keyup", function() {
         var id = $(this).attr("id");
